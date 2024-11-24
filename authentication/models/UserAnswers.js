@@ -16,7 +16,7 @@ const UserAnswers = sequelize.define('UserAnswers', {
     allowNull: false,
   },
   answer: {
-    type: DataTypes.ENUM('ya', 'tidak'),
+    type: DataTypes.INTEGER,
     allowNull: false,
   },
 }, {

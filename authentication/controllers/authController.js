@@ -43,28 +43,28 @@ const registerUser = async (req, res) => {
   const { username, email, password } = req.body;
 
   if (!username || !email || !password) {
-    return res.status(400).send('Semua field harus diisi.');
+    return res.status(400).json({ message: 'Semua field harus diisi.' });
   }
 
   if (password.length < 8) {
-    return res.status(400).send('Kata sandi harus memiliki minimal 8 karakter.');
+    return res.status(400).json({ message: 'Kata sandi harus memiliki minimal 8 karakter.' });
   }
 
   try {
     const existingUser = await User.findOne({
-      where: { username }
+      where: { username },
     });
 
     if (existingUser) {
-      return res.status(400).send('Username sudah digunakan, coba yang lain.');
+      return res.status(400).json({ message: 'Username sudah digunakan, coba yang lain.' });
     }
 
     const existingEmail = await User.findOne({
-      where: { email }
+      where: { email },
     });
 
     if (existingEmail) {
-      return res.status(400).send('Email sudah terdaftar.');
+      return res.status(400).json({ message: 'Email sudah terdaftar.' });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -73,12 +73,13 @@ const registerUser = async (req, res) => {
 
     await sendWelcomeEmail(email);
 
-    res.status(201).send('Registrasi berhasil!');
+    res.status(201).json({ message: 'Registrasi berhasil!' });
   } catch (error) {
     console.error('Error saat registrasi:', error);
-    res.status(500).send('Terjadi kesalahan pada server.');
+    res.status(500).json({ message: 'Terjadi kesalahan pada server.' });
   }
 };
+
 
 // LOGIN
 const loginUser = async (req, res) => {
@@ -86,10 +87,20 @@ const loginUser = async (req, res) => {
 
   try {
     const user = await User.findOne({ where: { username } });
-    if (!user) return res.status(400).send('Username atau password salah.');
+    if (!user) {
+      return res.status(400).json({
+        message: 'Username atau password salah.',
+        success: false,
+      });
+    }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) return res.status(400).send('Username atau password salah.');
+    if (!isPasswordValid) {
+      return res.status(400).json({
+        message: 'Username atau password salah.',
+        success: false,
+      });
+    }
 
     const payload = { id: user.id_login, username: user.username };
     const accessToken = generateAccessToken(payload);
@@ -106,9 +117,13 @@ const loginUser = async (req, res) => {
     });
   } catch (error) {
     console.error('Error saat login:', error);
-    res.status(500).send('Terjadi kesalahan pada server.');
+    res.status(500).json({
+      message: 'Terjadi kesalahan pada server.',
+      success: false,
+    });
   }
 };
+
 
 
 //LOGOUT
