@@ -1,4 +1,3 @@
-// authentication/models/QuizQuestions.js
 const { DataTypes } = require('sequelize');
 const sequelize = require('../db');
 
@@ -10,6 +9,10 @@ const QuizQuestions = sequelize.define('QuizQuestions', {
   },
   question_text: {
     type: DataTypes.TEXT,
+    allowNull: false,
+  },
+  label: {
+    type: DataTypes.STRING,
     allowNull: false,
   },
 }, {

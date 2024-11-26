@@ -7,7 +7,8 @@ const homeRoutes = require('./homepage/routes/homeRoutes');
 const quizRoutes = require('./quiz/routes/quizRoutes');
 const careerRoutes = require('./career/routes/careerRoutes');
 const softSkillsRoutes = require('./softSkills/routes/softSkillsRoutes');
-const profileRoutes = require('./authentication/routes/profileRoutes');;
+const profileRoutes = require('./authentication/routes/profileRoutes');
+require('./authentication/models/association');
 const app = express();
 
 app.use(express.json());

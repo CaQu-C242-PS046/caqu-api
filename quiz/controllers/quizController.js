@@ -1,6 +1,9 @@
 const QuizQuestions = require('../../authentication/models/Quiz');
 const UserAnswers = require('../../authentication/models/UserAnswers');
+const user = require('../../authentication/models/User');
 const CareerRecommendations = require('../../authentication/models/CareerRecommendations');
+const axios = require('axios');
+const flatted = require('flatted');
 
 
 const getQuestionByNumber = async (req, res) => {
@@ -99,42 +102,105 @@ const getQuizStatus = async (req, res) => {
   }
 };
 
-// Fungsi mock untuk mendapatkan rekomendasi karir
-//sample untuk rekomendasi karir, yang nantinya diganti oleh model ml
-const getCareerRecommendation = async (answers) => {
-  const recommendation = answers.includes('ya') ? 'Software Engineer' : 'Data Analyst';
-  return recommendation;
+const getUserAnswers = async (req, res) => {
+  try {
+    const user_id = req.user.id;
+
+    const answers = await UserAnswers.findAll({
+      where: { user_id: user_id },
+      include: [{
+        model: QuizQuestions,
+        as: 'QuizQuestion',
+        attributes: ['label'], 
+      }],
+    });
+
+    const formattedAnswers = answers.reduce((result, answer) => {
+      result[answer.QuizQuestion.label] = answer.answer;
+      return result;
+    }, {});
+
+    return formattedAnswers;
+
+  } catch (error) {
+    console.error('Gagal mengambil jawaban:', error);
+    return res.status(500).send('Internal Server Error');
+  }
 };
 
 const submitQuiz = async (req, res) => {
-  const userId = req.user.id; 
-
   try {
-      const userAnswers = await UserAnswers.findAll({
-          where: { user_id: userId },
-          attributes: ['answer'],
-          order: [['question_id', 'ASC']]
-      });
+    const userAnswers = await getUserAnswers(req, res);
 
-      const answers = userAnswers.map((answer) => answer.answer);
+    if (!userAnswers || Object.keys(userAnswers).length === 0) {
+      return res.status(404).json({ message: 'Jawaban pengguna tidak ditemukan.' });
+    }
 
-      const recommendedCareer = await getCareerRecommendation(answers);
+    // Kirim data ke FastAPI
+    const response = await fetch("http://127.0.0.1:8000/predict/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(userAnswers),
+    });
 
-      await CareerRecommendations.create({
-          user_id: userId,
-          recommended_career: recommendedCareer
-      });
+    if (!response.ok) {
+      const error = await response.json();
+      console.error('Error from FastAPI:', error);
+      return res.status(500).json({ message: 'Gagal mendapatkan rekomendasi karir.', error });
+    }
 
-      res.json({
-          message: 'Rekomendasi karir berhasil dibuat.',
-          recommendedCareer
-      });
+    const recommendation = await response.json();
+    console.log('Career Recommendation:', recommendation);
+
+    return res.json(recommendation);
 
   } catch (error) {
-      console.error('Error saat mengirimkan jawaban kuis:', error);
-      res.status(500).json({ message: 'Terjadi kesalahan saat mengirimkan jawaban kuis.' });
+    console.error('Terjadi kesalahan saat mengirim jawaban:', error);
+    return res.status(500).json({ message: 'Internal Server Error', error });
   }
 };
+
+
+// const submitQuiz = async (req, res) => {
+//   const userId = req.user.id; // Pastikan userId tersedia dari JWT
+
+//   if (!userId) {
+//     return res.status(400).json({ message: 'user_id tidak ditemukan dalam request.' });
+//   }
+
+//   try {
+//     const userAnswers = await getUserAnswers(req,res); 
+
+//     if (!userAnswers || Object.keys(userAnswers).length === 0) {
+//       return res.status(404).json({ message: 'Jawaban pengguna tidak ditemukan.' });
+//     }
+
+//     console.log(userAnswers);
+//     const recommendedCareer = await getCareerRecommendationFromML(userAnswers);
+
+
+
+//     await CareerRecommendations.create({
+//       user_id: userId,
+//       recommended_career: recommendedCareer,
+//     });
+
+
+//     return res.json({
+//       message: 'Rekomendasi karir berhasil dibuat.',
+//       recommendedCareer,
+//     });
+
+//   } catch (error) {
+//     console.error('Error saat mengirimkan jawaban kuis:', error);
+
+//     if (!res.headersSent) {
+//       return res.status(500).json({ message: 'Terjadi kesalahan saat memproses rekomendasi karir.' });
+//     }
+//   }
+// };
+
+
 
 
 
@@ -142,5 +208,6 @@ module.exports = {
   getQuestionByNumber,
   submitAnswer,
   getQuizStatus,
+  getUserAnswers,
   submitQuiz
 };
