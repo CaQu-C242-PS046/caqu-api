@@ -129,6 +129,7 @@ const getUserAnswers = async (req, res) => {
 };
 
 const submitQuiz = async (req, res) => {
+  const userId = req.user.id;
   try {
     const userAnswers = await getUserAnswers(req, res);
 
@@ -151,6 +152,13 @@ const submitQuiz = async (req, res) => {
 
     const recommendation = await response.json();
     console.log('Career Recommendation:', recommendation);
+
+    const predictedCareer = recommendation.predicted_career;
+
+    await CareerRecommendations.create({
+      user_id: userId,
+      recommended_career: predictedCareer
+    });
 
     return res.json(recommendation);
 

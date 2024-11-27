@@ -1,45 +1,63 @@
 const axios = require('axios');
 const Recomendation = require('../../authentication/models/recomendation');
-const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY;
+const YOUTUBE_API_KEY = process.env.API_KEY;
 
-const getYoutubeThumbnailAndVideoId = async (playlistUrl) => {
+const getPlaylists = async (playlistId) => {
+    const apiKey = YOUTUBE_API_KEY;
+    const url = `https://www.googleapis.com/youtube/v3/playlists?part=snippet&id=${playlistId}&key=${apiKey}`;
+
     try {
-        const playlistId = new URLSearchParams(new URL(playlistUrl).search).get('list');
+        const response = await axios.get(url);
+        console.log('API response:', response.data); 
 
-        if (!playlistId) {
-            return null;
+        const videoUrl = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${playlistId}&key=${apiKey}`;
+        const videoResponse = await axios.get(videoUrl);
+        const videos = videoResponse.data.items;
+        
+        if (response.data && response.data.items) {
+            const playlists = response.data.items;
+            const formattedPlaylists = playlists.map(playlist => ({
+                kind: "youtube#playlist",
+                id: playlist.id,
+                snippet: {
+                    playlistLink: `https://www.youtube.com/playlist?list=${playlist.id}`,
+                    title: playlist.snippet.title,
+                    description: playlist.snippet.description,
+                    thumbnails: playlist.snippet.thumbnails,
+                    channelId: playlist.snippet.channelId,
+                    channelTitle: playlist.snippet.channelTitle,
+                    videos: videos.map(video => ({
+                        videoLink: `https://www.youtube.com/watch?v=${video.snippet.resourceId.videoId}`,
+                        title: video.snippet.title,
+                        description: video.snippet.description,
+                        thumbnails: video.snippet.thumbnails
+                    }))
+                }
+            }));
+
+            return formattedPlaylists;
+        } else {
+            console.error('No playlists');
         }
-
-        const response = await axios.get('https://www.googleapis.com/youtube/v3/playlistItems', {
-            params: {
-                part: 'snippet',
-                playlistId: playlistId,
-                key: YOUTUBE_API_KEY,
-                maxResults: 1,
-            },
-        });
-
-        const items = response.data.items;
-        if (items && items.length > 0) {
-            const videoId = items[0].snippet.resourceId.videoId;
-            const thumbnailUrl = items[0].snippet.thumbnails.default.url;
-            return { thumbnailUrl, videoId };
-        }
-
-        return null;
     } catch (error) {
-        console.error('Error fetching YouTube video and thumbnail:', error);
-        return null;
+        if (error.response) {
+            console.error('Error response from API:', error.response.data);
+            console.error('Status code:', error.response.status);
+        } else if (error.request) {
+            console.error('No response received from API:', error.request);
+        } else {
+            console.error('Error setting up request:', error.message);
+        }
     }
 };
 
-
-const getKarirById = async (req, res) => {
+const getKarirByName = async (req, res) => {
     try {
-        const { id } = req.params;
+        const { name } = req.params;
+        console.log('Nama karir dari parameter:', name);
 
         const karir = await Recomendation.findOne({
-            where: { id_karir: id },
+            where: { nama_karir: name },
             attributes: ['nama_karir', 'skill', 'pendidikan', 'insight', 'video'],
         });
 
@@ -47,25 +65,18 @@ const getKarirById = async (req, res) => {
             return res.status(404).json({ error: "Karir tidak ditemukan" });
         }
 
-        let videoData = null;
-        if (karir.video) {
-            videoData = await getYoutubeThumbnailAndVideoId(karir.video);
-        }
-
         const cleanText = (text) => {
             return text.replace(/\r\n/g, '\n').split('\n');
         };
+
+        const playlists = await getPlaylists(karir.video);
 
         res.status(200).json({
             namaKarir: karir.nama_karir,
             skill: cleanText(karir.skill),
             pendidikan: cleanText(karir.pendidikan),
-            insight: cleanText(karir.insight),  
-            video: {
-                playlistUrl: karir.video,
-                thumbnailUrl: videoData ? videoData.thumbnailUrl : null,
-                videoUrl: videoData ? `https://www.youtube.com/embed/${videoData.videoId}` : null,
-            },
+            insight: cleanText(karir.insight),
+            video: playlists 
         });
     } catch (error) {
         console.error('Error fetching karir by ID:', error);
@@ -74,6 +85,6 @@ const getKarirById = async (req, res) => {
 };
 
 module.exports = {
-    getKarirById,
+    getKarirByName,
 };
 

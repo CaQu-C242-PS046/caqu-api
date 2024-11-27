@@ -1,9 +1,9 @@
 const express = require('express');
-const { getKarirById } = require('../controllers/careerControllers');
+const { getKarirByName } = require('../controllers/careerControllers');
 const authenticateToken = require('../../authentication/middleware/authMiddleware');
 const router = express.Router();
 
-router.get('/career/:id', authenticateToken, getKarirById);
+router.get('/career/:name', getKarirByName);
 
 
 module.exports = router;
