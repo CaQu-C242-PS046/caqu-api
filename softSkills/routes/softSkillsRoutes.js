@@ -1,9 +1,9 @@
 const express = require('express');
-const { getSoftSkillsById, getAllSoftSkillNames} = require('../controllers/softSkillsControllers');
+const { getSoftSkillsByName, getAllSoftSkillNames} = require('../controllers/softSkillsControllers');
 const authenticateToken = require('../../authentication/middleware/authMiddleware');
 const router = express.Router();
 
-router.get('/softSkills/names', authenticateToken, getAllSoftSkillNames);
-router.get('/softSkills/:id', authenticateToken, getSoftSkillsById);
+router.get('/softSkills/all', getAllSoftSkillNames);
+router.get('/softSkills/:name', getSoftSkillsByName);
 
 module.exports = router;

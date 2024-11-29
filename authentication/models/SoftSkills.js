@@ -21,6 +21,11 @@ const SoftSkills = sequelize.define('SoftSkills', {
     type: DataTypes.STRING,
     allowNull: false,
     unique: false
+  },
+  videoId: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    unique: false
   }
 }, {
   tableName: 'softSkill',

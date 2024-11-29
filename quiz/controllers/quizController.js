@@ -1,9 +1,6 @@
 const QuizQuestions = require('../../authentication/models/Quiz');
 const UserAnswers = require('../../authentication/models/UserAnswers');
-const user = require('../../authentication/models/User');
 const CareerRecommendations = require('../../authentication/models/CareerRecommendations');
-const axios = require('axios');
-const flatted = require('flatted');
 
 
 const getQuestionByNumber = async (req, res) => {
@@ -32,7 +29,6 @@ const getQuestionByNumber = async (req, res) => {
     res.status(500).json({ message: 'Terjadi kesalahan pada server.' });
   }
 };
-
 
 const submitAnswer = async (req, res) => {
   const userId = req.user.id; 
@@ -138,7 +134,7 @@ const submitQuiz = async (req, res) => {
     }
 
     // Kirim data ke FastAPI
-    const response = await fetch("http://127.0.0.1:8000/predict/", {
+    const response = await fetch("https://predict-model-996341729767.asia-southeast2.run.app/predict/", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(userAnswers),
@@ -167,50 +163,6 @@ const submitQuiz = async (req, res) => {
     return res.status(500).json({ message: 'Internal Server Error', error });
   }
 };
-
-
-// const submitQuiz = async (req, res) => {
-//   const userId = req.user.id; // Pastikan userId tersedia dari JWT
-
-//   if (!userId) {
-//     return res.status(400).json({ message: 'user_id tidak ditemukan dalam request.' });
-//   }
-
-//   try {
-//     const userAnswers = await getUserAnswers(req,res); 
-
-//     if (!userAnswers || Object.keys(userAnswers).length === 0) {
-//       return res.status(404).json({ message: 'Jawaban pengguna tidak ditemukan.' });
-//     }
-
-//     console.log(userAnswers);
-//     const recommendedCareer = await getCareerRecommendationFromML(userAnswers);
-
-
-
-//     await CareerRecommendations.create({
-//       user_id: userId,
-//       recommended_career: recommendedCareer,
-//     });
-
-
-//     return res.json({
-//       message: 'Rekomendasi karir berhasil dibuat.',
-//       recommendedCareer,
-//     });
-
-//   } catch (error) {
-//     console.error('Error saat mengirimkan jawaban kuis:', error);
-
-//     if (!res.headersSent) {
-//       return res.status(500).json({ message: 'Terjadi kesalahan saat memproses rekomendasi karir.' });
-//     }
-//   }
-// };
-
-
-
-
 
 module.exports = {
   getQuestionByNumber,
