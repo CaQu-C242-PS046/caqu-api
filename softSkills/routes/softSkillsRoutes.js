@@ -3,7 +3,7 @@ const { getSoftSkillsByName, getAllSoftSkillNames} = require('../controllers/sof
 const authenticateToken = require('../../authentication/middleware/authMiddleware');
 const router = express.Router();
 
-router.get('/softSkills/all', getAllSoftSkillNames);
-router.get('/softSkills/:name', getSoftSkillsByName);
+router.get('/softSkills/all',authenticateToken, getAllSoftSkillNames);
+router.get('/softSkills/:name',authenticateToken, getSoftSkillsByName);
 
 module.exports = router;

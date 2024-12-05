@@ -30,6 +30,10 @@ const Recomendation = sequelize.define('Recomendation', {
   video: {
     type: DataTypes.STRING,
     allowNull: true,
+  },
+  playlistId: {
+    type: DataTypes.STRING,
+    allowNull: true,
   }
 }, {
   tableName: 'karir',
