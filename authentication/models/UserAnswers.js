@@ -20,7 +20,7 @@ const UserAnswers = sequelize.define('UserAnswers', {
     allowNull: false,
   },
 }, {
-  tableName: 'userAnswers',
+  tableName: 'useranswers',
   timestamps: true,    
   createdAt: 'created_at',
   updatedAt: 'updated_at',

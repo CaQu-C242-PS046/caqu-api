@@ -28,7 +28,7 @@ const SoftSkills = sequelize.define('SoftSkills', {
     unique: false
   }
 }, {
-  tableName: 'softSkill',
+  tableName: 'softskill',
   timestamps: false,
 });
 

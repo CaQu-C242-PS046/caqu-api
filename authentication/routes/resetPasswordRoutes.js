@@ -4,5 +4,5 @@ const { sendPasswordResetEmail, resetPassword } = require('../controllers/resetP
 
 router.post('/forgot-password', sendPasswordResetEmail);
 
-router.put('/reset-password', resetPassword);
+router.put('/reset-password/:token', resetPassword);
 module.exports = router;

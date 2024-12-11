@@ -7,10 +7,6 @@ const User = sequelize.define('User', {
     primaryKey: true,
     autoIncrement: true,
   },
-  google_id: {
-    type: DataTypes.STRING,
-    allowNull: true,
-  },
   username: {
     type: DataTypes.STRING,
     allowNull: false,
@@ -32,12 +28,7 @@ const User = sequelize.define('User', {
   profile_picture_url: {
     type: DataTypes.STRING,
     allowNull: true,
-  },
-  isActive: { 
-    type: DataTypes.BOOLEAN,
-    defaultValue: false,
-    allowNull: true,
-  },
+  }
 }, {
   tableName: 'login',
   timestamps: true,    

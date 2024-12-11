@@ -34,6 +34,14 @@ const Recomendation = sequelize.define('Recomendation', {
   playlistId: {
     type: DataTypes.STRING,
     allowNull: true,
+  },
+  feedback: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  image: {
+    type: DataTypes.STRING,
+    allowNull: true,
   }
 }, {
   tableName: 'karir',

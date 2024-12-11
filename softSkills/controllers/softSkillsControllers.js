@@ -34,7 +34,7 @@ const getVideoDetails = async (videoId) => {
   try {
       const response = await axios.get(url);
       console.log('API response:', response.data);
-
+ 
       if (response.data && response.data.items) {
           const video = response.data.items[0]; 
           const formattedVideo = {
@@ -71,7 +71,7 @@ const getSoftSkillsByName = async (req, res) => {
 
     const softSkill = await SoftSkills.findOne({
       where: { nama_ss: name },
-      attributes: ['nama_ss', 'artikel', 'video', 'videoId'],
+      attributes: ['nama_ss', 'video', 'videoId'],
     });
 
     if (!softSkill) {
@@ -88,7 +88,6 @@ const getSoftSkillsByName = async (req, res) => {
 
     res.status(200).json({
       nama_ss: softSkill.nama_ss,
-      artikel: cleanText(softSkill.artikel),
       video: videos
     });
 

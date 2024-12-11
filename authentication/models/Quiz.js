@@ -16,7 +16,7 @@ const QuizQuestions = sequelize.define('QuizQuestions', {
     allowNull: false,
   },
 }, {
-  tableName: 'quizQuestions',
+  tableName: 'quizquestions',
   timestamps: false, // Menonaktifkan kolom createdAt dan updatedAt
 });
 
